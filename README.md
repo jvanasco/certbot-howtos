@@ -36,7 +36,7 @@ These howto files describe my preferred ways to integrate Certbot.
 
 # LetsEncrypt HOWTOs
 
-* [troubleshoot-connections](letsencrypt--troubleshoot-connections.md)
+* [troubleshoot-connectivity](letsencrypt--troubleshoot-connectivity.md)
 
 
 # Third Party Tools
