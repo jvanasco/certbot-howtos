@@ -12,9 +12,9 @@ While many DNS providers offer API access that can be used to automate certifica
 
 This setup has a few parts that may make it seem complex and intimidating, but it's quite simple.
 
-1- Operate an acme-dns server on the public internet
-2- utilize firewall rules to enable/disable acme-dns as needed
-3- utilize an alternate configuration of Certbot for local needs
+1. Operate an acme-dns server on the public internet
+2. utilize firewall rules to enable/disable acme-dns as needed
+3. utilize an alternate configuration of Certbot for local needs
 
 
 ## Install and Configure acme-dns on the PUBLIC server
