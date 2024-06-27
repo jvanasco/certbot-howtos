@@ -35,14 +35,14 @@ https://github.com/joohoi/acme-dns
 Some users have been confused with the DNS requirements for the system. These lines from the documentation are the most important (slightly edited):
 
 > You will need to add 2-3 DNS records on your domain's regular DNS server:
-> 
+>
 > `NS` record for `auth.example.com` pointing to `auth.example.com` (this means, that `auth.example.com` is responsible for any `*.auth.example.com` records)
 > `A` record for `auth.example.com` pointing to the IPv4-ADDRESS of the server
 > If using IPv6, an `AAAA` record pointing to the IPv6 address.
 
 The acme-dns configuration is fairly straightforward.  Follow the docs.  Test that it is working!
 
-Pay attention to the section about installing it into systemd for service management.  
+Pay attention to the section about installing it into systemd for service management.
 
 
 ## Configure IP Tables on the PUBLIC server
@@ -86,15 +86,13 @@ This allows us to only run acme-dns as needed:
 	-A INPUT -j acme-dns
     ```
 
-* then reload the edited dumpfile, so it persists across reboots
+* then reload the edited dumpfile, so it persists across reboots:
 
     ```
 	iptables-restore < iptables.dump
     ```
-	
 
 The result of this work, is you will be able to enable acme-dns with the following:
-
 
     ```
 	iptables -A acme-dns -p tcp --dport 53 -j ACCEPT
@@ -166,7 +164,7 @@ The reasons for managing two directories of files:
 
 * A new virtualenv will needed for each Python version; you may need to install a newer Python version onto your system to install a more recent Certbot
 * Decoupling the datastore means different Certbots/Python environments can access a centralized datastore
-* We're going to invoke Certbot to save files into specific "userland" places, so they can be part of our data backups, instead of system directories. 
+* We're going to invoke Certbot to save files into specific "userland" places, so they can be part of our data backups, instead of system directories.
 
 I typically have multiple versions of Python installed, so my virtualenv will include the Python version in it.
 
@@ -177,20 +175,20 @@ The following **assumes** `python` is mapped to the latest Python 3.  You may ne
     ```
     python --version
     ```
-   
+
 * What version of pip do you have?  is it for the right Python?
 
     ```
     pip --version
-    which pip 
+    which pip
     ```
-   
+
 * Once you have the right pip, let's update!
 
     ```
     sudo pip install --upgrade pip virtualenv
     ```
-   
+
 * Create the virtualenv. If you have another version of Python, replace the "3.12" with your version number:
 
     ```
@@ -216,13 +214,13 @@ The following **assumes** `python` is mapped to the latest Python 3.  You may ne
     ```
     which certbot
     ```
-    
+
 * you should see something like:
 
     ```
     /Users/jvanasco/dev-env/certbot-3.12/bin/certbot
     ```
-    
+
 * Finally, we're going to create our centralized datastore. The root directory can be anywhere on your system, but will need subdirectories for: `-logs`, `-work`, `authorization_hooks`, and `etc/letsencrypt`.
 
     ```
@@ -258,7 +256,6 @@ The important things to note in this edit - the storage path should be in your c
     # Path for acme-dns credential storage
     STORAGE_PATH = "/Volumes/Development/tools/certbot-local/authorization_hooks/acmedns.json"
     ```
-    
 
 ## Onboarding a Certificate
 
@@ -285,7 +282,7 @@ In the first window, we will ssh into our public server and "switch on" the acme
     iptables -A acme-dns -p tcp --dport 53 -j ACCEPT
     iptables -A acme-dns -p udp --dport 53 -j ACCEPT
     iptables -A acme-dns -p tcp --dport 8011 -j ACCEPT
-    systemctl start acme-dns.service    
+    systemctl start acme-dns.service
     ```
 
 To automate this, you might want to wrap the `iptables` and `systemctl` lines into an executable script.
@@ -373,7 +370,7 @@ Set this record, then test it:
     ```
     dig _acme-challenge.example.com TXT
     ```
-    
+
 The results should show something like:
 
     ```
@@ -382,7 +379,7 @@ The results should show something like:
     aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee.acme-dns.aptise.com. 1 IN TXT "A1A1A1A1A1A1A1A1A1A1A1A1A1A1A1A1A1A1A1A1A1A"
     aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee.acme-dns.aptise.com. 1 IN TXT "B2B2B2B2B2B2B2B2B2B2B2B2B2B2B2B2B2B2B2B2B2B"
     ```
-    
+
 If you don't get a success, wait a few moments and try again.  The DNS records need to propagate.
 
 Once you do have success, go back to your local terminal:
@@ -394,7 +391,7 @@ Now that your CNAME record and challenges are known to work, we can follow the C
     ```
     Challenges loaded. Press continue to submit to CA.
     ```
-    
+
 Just hit enter/return.  Your Certificate should quickly issue, be saved to your datastore, and Certbot will exit.
 
 You can continue onboarding domains with additional `certbot` commands.  When done, we can turn acme-dns off.
@@ -408,7 +405,7 @@ Now that Certbot is done, back in the other window, we just shut acme-dns off:
     iptables -F acme-dns
     systemctl stop acme-dns.service
     ```
-    
+
 
 ## Renewing a Certificate
 
@@ -428,7 +425,7 @@ Just like onboarding, ssh into our public server and "switch on" the acme-dns sy
     iptables -A acme-dns -p tcp --dport 53 -j ACCEPT
     iptables -A acme-dns -p udp --dport 53 -j ACCEPT
     iptables -A acme-dns -p tcp --dport 8011 -j ACCEPT
-    systemctl start acme-dns.service    
+    systemctl start acme-dns.service
     ```
 
 #### Terminal B - local
@@ -447,7 +444,7 @@ Then renew your certificates:
         --config-dir /Volumes/Development/tools/certbot-local/etc/letsencrypt \
         --work-dir /Volumes/Development/tools/certbot-local/-work \
         --logs-dir /Volumes/Development/tools/certbot-local/-logs \
-        renew 
+        renew
     ```
 
 And when you're done...
@@ -460,7 +457,7 @@ Shut off acme-dns
     iptables -F acme-dns
     systemctl stop acme-dns.service
     ```
-    
+
 ## Making things even easier
 
 Certbot offers many hooks you can use to automate this work.
@@ -471,7 +468,7 @@ Here are some that I like:
   * enroll the certificate into a secure version control system that encrypts data. I like to use [Blackbox](https://github.com/StackExchange/blackbox) to encrypt this data for normal Git repositories.
   * deploy the certificates to remote servers. a simple shell script can copy these files with `rsync`, however the remote servers will need to be configured to restart when they detect changes or periodically. an alternative is to use [Fabric](https://fabfile.org) to write a quick script that deploys the certificate and ssh's into the server to restart the affected services.
 
-* `--pre-hook` and `--post-hook` can be used to invoke a script that ssh's into the remote server to enable/disable the firewall rules and acme-dns.  A caveat is these run for each renewal attempt.  While they do not run for certificates that do not need renewal, if you have a large integration this can waste time.  
+* `--pre-hook` and `--post-hook` can be used to invoke a script that ssh's into the remote server to enable/disable the firewall rules and acme-dns.  A caveat is these run for each renewal attempt.  While they do not run for certificates that do not need renewal, if you have a large integration this can waste time.
   * I prefer to handle renewals with a Fabric command that does the following:
     * enable acme-dns and firewall on the remote server
     * invoke certbot locally with the requisite commandline flags and hooks
