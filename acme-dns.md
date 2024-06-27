@@ -61,15 +61,20 @@ This allows us to only run acme-dns as needed:
 
 * set the tables to run it BEFORE the port 53 deny
 
+    ```
 	iptables -A INPUT -j acme-dns
+    ```
 
 * it make make sense to first do a backup...
 
+    ```
 	iptables-save > iptables.dump
 	vi iptables.dump
+    ```
 
 * then manually add in the acme-dns line as the first chain. It might look something like this:
 
+    ```
 	:INPUT DROP [0:0]
 	:FORWARD ACCEPT [0:0]
 	:OUTPUT ACCEPT [451:186415]
@@ -79,23 +84,31 @@ This allows us to only run acme-dns as needed:
 	:f2b-sshd-invalid_accounts - [0:0]
 	:f2b-sshd-system_accounts - [0:0]
 	-A INPUT -j acme-dns
+    ```
 
 * then reload the edited dumpfile, so it persists across reboots
 
+    ```
 	iptables-restore < iptables.dump
+    ```
 	
 
 The result of this work, is you will be able to enable acme-dns with the following:
 
+
+    ```
 	iptables -A acme-dns -p tcp --dport 53 -j ACCEPT
 	iptables -A acme-dns -p udp --dport 53 -j ACCEPT
 	iptables -A acme-dns -p tcp --dport 8011 -j ACCEPT
+    ```
 
 For those unfamiliar with iptables, we're just adding telling it to add those ACCEPT rules into the chain.
 
 and then you can disable it with the following:
 
+    ```
 	iptables -F acme-dns
+    ```
 
 Again, for those unfamiliar with iptables, we're just flushing all the rules in our acme-dns chain.
 
@@ -161,47 +174,65 @@ The following **assumes** `python` is mapped to the latest Python 3.  You may ne
 
 * What version of Python do you have?
 
-   python --version
+    ```
+    python --version
+    ```
    
 * What version of pip do you have?  is it for the right Python?
 
+    ```
     pip --version
     which pip 
+    ```
    
 * Once you have the right pip, let's update!
 
+    ```
     sudo pip install --upgrade pip virtualenv
+    ```
    
 * Create the virtualenv. If you have another version of Python, replace the "3.12" with your version number:
 
+    ```
     mkdir ~/dev-env
     cd ~/dev-env
     python3 -m venv certbot-3.12
+    ```
 
 * activate the environment.  We'll still use absolute commands, but this is a good thing to do:
 
+    ```
     source ~/dev-env/certbot-3.12/bin/activate
+    ```
 
 * install Certbot:
 
+    ```
     ~/dev-env/certbot-3.12/bin/pip install certbot
+    ```
 
 * check to see you have the right Certbot...
 
+    ```
     which certbot
+    ```
     
 * you should see something like:
 
+    ```
     /Users/jvanasco/dev-env/certbot-3.12/bin/certbot
+    ```
     
 * Finally, we're going to create our centralized datastore. The root directory can be anywhere on your system, but will need subdirectories for: `-logs`, `-work`, `authorization_hooks`, and `etc/letsencrypt`.
 
+    ```
     mkdir /Volumes/Development/tools/certbot-local
     mkdir /Volumes/Development/tools/certbot-local/-logs
     mkdir /Volumes/Development/tools/certbot-local/-work
     mkdir /Volumes/Development/tools/certbot-local/authorization_hooks
     mkdir /Volumes/Development/tools/certbot-local/etc
     mkdir /Volumes/Development/tools/certbot-local/etc/letsencrypt
+    ```
 
 ## Install Authentication Hook
 
@@ -213,16 +244,20 @@ My preferred hook is the Python hook [acme-dns-certbot-joohoi](https://github.co
 
 We are basically going to follow the instructions on the page, but with a slightly different install location - the root of our centralized datastore:
 
+    ```
     cd /Volumes/Development/tools/certbot-local/authorization_hooks
     curl -o https://raw.githubusercontent.com/joohoi/acme-dns-certbot-joohoi/master/acme-dns-auth.py
     chmod 0700 acme-dns-auth.py
+    ```
 
 Then you should edit the configuration values as instructed on that project's docs.
 
 The important things to note in this edit - the storage path should be in your centralized datastore:
 
+    ```
     # Path for acme-dns credential storage
     STORAGE_PATH = "/Volumes/Development/tools/certbot-local/authorization_hooks/acmedns.json"
+    ```
     
 
 ## Onboarding a Certificate
@@ -244,12 +279,14 @@ So here we go:
 
 In the first window, we will ssh into our public server and "switch on" the acme-dns system:
 
+    ```
     ssh acme-dns.example.com
     sudo bash
     iptables -A acme-dns -p tcp --dport 53 -j ACCEPT
     iptables -A acme-dns -p udp --dport 53 -j ACCEPT
     iptables -A acme-dns -p tcp --dport 8011 -j ACCEPT
     systemctl start acme-dns.service    
+    ```
 
 To automate this, you might want to wrap the `iptables` and `systemctl` lines into an executable script.
 
@@ -259,13 +296,16 @@ Once acme-dns is enabled, we're going to need a terminal window on the local mac
 
 The first thing to do is activate our virtualenv:
 
+    ```
     source ~/dev-env/certbot-3.12/bin/activate
     which certbot
+    ```
 
 Once that is done, while we *can* use the bare `certbot` command as we know it is properly aliased, it is still recommended to specify the exact executable.
 
 Here is the command we invoke.  I will describe it in detail below:
 
+    ```
     ~/dev-env/certbot-3.12/bin/certbot \
         --config-dir /Volumes/Development/tools/certbot-local/etc/letsencrypt \
         --work-dir /Volumes/Development/tools/certbot-local/-work \
@@ -278,6 +318,7 @@ Here is the command we invoke.  I will describe it in detail below:
         --server https://acme-staging-v02.api.letsencrypt.org/directory \
         -d example.com \
         -d *.example.com
+    ```
 
 The command flags for `--config-dir`, `--work-dir` and `--logs-dir` are just telling Certbot to operate that functionality out of our centralized datastore.  This is important for managing these files, and troubleshooting.
 
@@ -301,7 +342,7 @@ Expected value: {{EXPECTED_VALUE}}
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ```
 
-*Ignore this message* and scroll up.  Several lines above you should see a message that reads:
+Your should *ignore this message* and scroll up.  Several lines above you should see a message that reads:
 
 ```
 Hook '--manual-auth-hook' for example.com ran with output:
@@ -329,14 +370,18 @@ While TXT challenges can be "cleaned up", those exist on the acme-dns server.  T
 
 Set this record, then test it:
 
+    ```
     dig _acme-challenge.example.com TXT
+    ```
     
 The results should show something like:
 
+    ```
     ;; ANSWER SECTION:
     _acme-challenge.example.com. 120 IN CNAME aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee.acme-dns.example.com.
     aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee.acme-dns.aptise.com. 1 IN TXT "A1A1A1A1A1A1A1A1A1A1A1A1A1A1A1A1A1A1A1A1A1A"
     aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee.acme-dns.aptise.com. 1 IN TXT "B2B2B2B2B2B2B2B2B2B2B2B2B2B2B2B2B2B2B2B2B2B"
+    ```
     
 If you don't get a success, wait a few moments and try again.  The DNS records need to propagate.
 
@@ -346,7 +391,9 @@ Once you do have success, go back to your local terminal:
 
 Now that your CNAME record and challenges are known to work, we can follow the Certbot instructions:
 
+    ```
     Challenges loaded. Press continue to submit to CA.
+    ```
     
 Just hit enter/return.  Your Certificate should quickly issue, be saved to your datastore, and Certbot will exit.
 
@@ -357,8 +404,10 @@ You can continue onboarding domains with additional `certbot` commands.  When do
 
 Now that Certbot is done, back in the other window, we just shut acme-dns off:
 
+    ```
     iptables -F acme-dns
     systemctl stop acme-dns.service
+    ```
     
 
 ## Renewing a Certificate
@@ -373,27 +422,33 @@ The abridged version:
 
 Just like onboarding, ssh into our public server and "switch on" the acme-dns system:
 
+    ```
     ssh acme-dns.example.com
     sudo bash
     iptables -A acme-dns -p tcp --dport 53 -j ACCEPT
     iptables -A acme-dns -p udp --dport 53 -j ACCEPT
     iptables -A acme-dns -p tcp --dport 8011 -j ACCEPT
     systemctl start acme-dns.service    
+    ```
 
 #### Terminal B - local
 
 Activate our virtualenv:
 
+    ```
     source ~/dev-env/certbot-3.12/bin/activate
     which certbot
+    ```
 
 Then renew your certificates:
 
+    ```
     certbot \
         --config-dir /Volumes/Development/tools/certbot-local/etc/letsencrypt \
         --work-dir /Volumes/Development/tools/certbot-local/-work \
         --logs-dir /Volumes/Development/tools/certbot-local/-logs \
         renew 
+    ```
 
 And when you're done...
 
@@ -401,8 +456,10 @@ And when you're done...
 
 Shut off acme-dns
 
+    ```
     iptables -F acme-dns
     systemctl stop acme-dns.service
+    ```
     
 ## Making things even easier
 

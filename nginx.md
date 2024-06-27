@@ -24,6 +24,7 @@ It is basically all the `ssl_*` directives output by https://ssl-config.mozilla.
 
 So an SSL integration for a configuration file will just look like:
 
+    ```
     /etc/nginx/sites-enabled/com.example
 
     ## SSL - core
@@ -32,6 +33,7 @@ So an SSL integration for a configuration file will just look like:
     ## SSL - this is our default
     ssl_certificate  /etc/letsencrypt/live/example.com/fullchain.pem;
     ssl_certificate_key  /etc/letsencrypt/live/example.com/privkey.pem;
+    ```
 
 ## Certbot Standalone Mode + Nginx Proxypass
 
@@ -41,6 +43,7 @@ I accomplish this in a few steps:
 
 I define my a shared proxypass in a macro: `/etc/nginx/macros/letsencrypt.conf`.  Every domain conf file will include this macro:
 
+    ```
     location  /.well-known/acme-challenge  {
         if (!-f /etc/nginx/_flags/certbot-8111) {
             rewrite ^.*$ @letsencrypt_503 last;
@@ -55,6 +58,7 @@ I define my a shared proxypass in a macro: `/etc/nginx/macros/letsencrypt.conf`.
         internal;
         return 503;
     }
+    ```
 
 Things to note here:
 
@@ -63,33 +67,28 @@ Things to note here:
 
 When I invoke Certbot, I use the `--pre-hook` and `--post-hook` to enable/disable that rewrite rule.  This means we will trigger that 503 if the backend service is not *allowed* to run.  
 
+    ```
     certbot \
         renew \
         --standalone \
         --http-01-port=8111 \
         --pre-hook "touch /etc/nginx/_flags/certbot-8111" \
         --post-hook "rm /etc/nginx/_flags/certbot-8111"
+    ```
 
 In order to test the nginx integration, I just need to run a "fake server" on my alternate port that response to the `/.well-known/acme-challenge/{TOKEN}` requests.  I have open sourced one here: https://github.com/aptise/peter_sslers/blob/main/tools/fake_server.py
 
 Assuming your `python` and `pip` bins are mapped to a recent version of Python3:
 
+    ```
     cd ~
     mkdir nginx-tests
     cd nginx-tests
     curl -O https://github.com/aptise/peter_sslers/blob/main/tools/fake_server.py
     pip install pyramid
     python fake_server.py 8111
+    ```
 
 With that script running, I can make requests to `https://example.com/.well-known/acme-challenge/foo` and I should get a 200 response with "foo" -- or whatever other "challenge" I submit as the last part of the url.  The fake server will also add to the response headers: `X-Peter-SSLers: fakeserver`.  If I don't see either of those things, I need to debug the nginx logs.  
 
 I will ensure this integration works correctly with the semaphore file (`/etc/nginx/_flags/certbot-8111`) both existing and missing.
-
-
-
-
-
-
-
-
-
