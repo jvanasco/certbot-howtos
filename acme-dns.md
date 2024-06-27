@@ -36,9 +36,9 @@ Some users have been confused with the DNS requirements for the system. These li
 
 > You will need to add 2-3 DNS records on your domain's regular DNS server:
 >
-> `NS` record for `auth.example.com` pointing to `auth.example.com` (this means, that `auth.example.com` is responsible for any `*.auth.example.com` records)
-> `A` record for `auth.example.com` pointing to the IPv4-ADDRESS of the server
-> If using IPv6, an `AAAA` record pointing to the IPv6 address.
+> * `NS` record for `auth.example.com` pointing to `auth.example.com` (this means, that `auth.example.com` is responsible for any `*.auth.example.com` records)
+> * `A` record for `auth.example.com` pointing to the IPv4-ADDRESS of the server
+> * If using IPv6, an `AAAA` record pointing to the IPv6 address.
 
 The acme-dns configuration is fairly straightforward.  Follow the docs.  Test that it is working!
 
