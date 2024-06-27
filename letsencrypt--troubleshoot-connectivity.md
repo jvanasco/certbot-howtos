@@ -16,7 +16,7 @@ To get a certificate from LetsEncrypt, their ACME Server server must prove that 
   * LetsEncrypt *does not and will not* publish their outbound IPs
   * The outbound LetsEncrypt IPs are subject to change at any point, and often do change. You should not rely on bypass rules for IPs that you discovered, or that were shared for you - they will eventually break.
   
-# For `DNS-01` challenges, LetsEncrypt will connect with the authoritative nameservers for your domain.  The DNS servers **MUST** be on the public internet with no geo-blocking.  If you delegate challenges to a secondary DNS system via CNAMEs, those **MUST** also be on the public internet with no geo-blocking.
+* For `DNS-01` challenges, LetsEncrypt will connect with the authoritative nameservers for your domain.  The DNS servers **MUST** be on the public internet with no geo-blocking.  If you delegate challenges to a secondary DNS system via CNAMEs, those **MUST** also be on the public internet with no geo-blocking.
 
 If you run geo-blocking on your servers, you have the following options:
 
